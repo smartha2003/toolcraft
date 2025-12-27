@@ -141,6 +141,38 @@
   final_answer(pope_current_age)
   ```<end_code>
 
+  ---
+  Task: "What is the population of Tokyo?"
+  
+  Thought: I need to find Tokyo's population. Let me try visiting a reliable population statistics website.
+  Code:
+  ```py
+  url = "https://worldpopulationreview.com/cities/japan/tokyo"
+  content = visit_webpage(url=url)
+  print(content)
+  ```<end_code>
+  Observation: [Webpage content showing "Tokyo's 2025 population is now estimated at **37,036,200**"]
+  
+  Thought: Perfect! I found the answer in the webpage content. I can see "Tokyo's 2025 population is now estimated at **37,036,200**". Let me extract this number and provide the final answer.
+  Code:
+  ```py
+  import re
+  # Extract the population number from the content
+  match = re.search(r"population is now estimated at \*\*(\d{1,3}(?:,\d{3})*)\*\*", content)
+  if match:
+      population = match.group(1)
+      final_answer(f"Tokyo's population is approximately {population} people (2025 estimate)")
+  else:
+      # Fallback: search for numbers near "population"
+      parts = content.split("population")
+      for part in parts[:3]:  # Check first few occurrences
+          numbers = re.findall(r'\d{1,3}(?:,\d{3})*', part)
+          if numbers and len(numbers[0]) > 6:  # Population numbers are usually large
+              final_answer(f"Tokyo's population is approximately {numbers[0]} people")
+              break
+  ```<end_code>
+  
+  ---
   Above example were using notional tools that might not exist for you. On top of performing computations in the Python code snippets that you create, you only have access to these tools:
   {%- for tool in tools.values() %}
   - {{ tool.name }}: {{ tool.description }}
@@ -170,6 +202,9 @@
   8. You can use imports in your code, but only from the following list of modules: {{authorized_imports}}
   9. The state persists between code executions: so if in one step you've created variables or imported modules, these will all persist.
   10. Don't give up! You're in charge of solving the task, not providing directions to solve it.
+  11. CRITICAL: When you visit a webpage with visit_webpage, IMMEDIATELY check if the content contains the answer. If you see numbers, facts, or information that answers the question, extract it RIGHT AWAY in the same code block using Python string methods (like .find(), .split(), regex with re.search(), or simple string operations). Then call final_answer() immediately. Do NOT wait for the next step - extract and answer in the same step!
+  12. If web_search fails more than 2 times, STOP using it. Instead, use visit_webpage with known reliable URLs (like worldpopulationreview.com, cia.gov, etc.) or try completely different approaches. Don't waste steps on broken tools.
+  13. When you see a redirect message from visit_webpage, immediately visit the redirected URL in the next step. Don't ignore redirects.
 
   Now Begin! If you solve the task correctly, you will receive a reward of $1,000,000.
 "planning":
@@ -299,6 +334,15 @@
     After writing the final step of the plan, write the '\n<end_plan>' tag and stop there.
 
     Now write your new plan below.
+"final_answer":
+  "pre_messages": |-
+    You have reached the maximum number of steps allowed. Based on the work you've done so far, provide a final answer to the task.
+    
+    Task: {{task}}
+    
+    Summarize what you've learned and provide the best answer you can based on the information gathered.
+  "post_messages": |-
+    Based on the information you've gathered, provide your final answer to the task.
 "managed_agent":
   "task": |-
     You're a helpful agent named '{{name}}'.
