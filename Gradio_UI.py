@@ -601,6 +601,7 @@ class GradioUI:
                 ),
                 resizable=True,
                 scale=1,
+                type="messages",  # Use messages format (ChatMessage objects) instead of tuples
             )
             # If an upload folder is provided, enable the upload feature
             if self.file_upload_folder is not None:
@@ -618,7 +619,7 @@ class GradioUI:
                 [stored_messages, text_input],
             ).then(self.interact_with_agent, [stored_messages, chatbot], [chatbot])
 
-        demo.launch(debug=True, share=True, **kwargs)
+        demo.launch(debug=True, **kwargs)  # Removed share=True as it's not supported on HF Spaces
 
 
 __all__ = ["stream_to_gradio", "GradioUI"]
